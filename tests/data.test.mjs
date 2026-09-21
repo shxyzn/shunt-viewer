@@ -26,3 +26,19 @@ test('Duplicate images require correction instead of silently replacing data',()
 test('ROI must stay inside its image',()=>{
   assert.equal(validROI([.2,.3,.1,.1]),true);assert.equal(validROI([.9,.2,.5,.1]),false);assert.equal(validROI([0,0,0,.1]),false);assert.equal(validROI([NaN,0,.1,.1]),false);
 });
+test('Pair Strata A/L series while preserving study identity and date',()=>{
+  // Artificial identifiers, not patient records.
+  const ap='strata_1234567_20200101_12345670000_A_1.0.png';
+  const lat='strata_1234567_20200101_12345670001_L_1.0.png';
+  assert.equal(caseKey(ap),caseKey(lat));
+  assert.notEqual(caseKey(ap),caseKey(lat.replaceAll('1234567','7654321')));
+  assert.notEqual(caseKey(ap),caseKey(lat.replace('20200101','20200102')));
+  assert.notEqual(caseKey(ap),caseKey(lat.replace('0001_L','0002_L')));
+  const entries=[['anterior/images',ap],['anterior/images_patch',ap],['lateral/images',lat],['lateral/images_patch',lat]].map(([dir,file],i)=>({path:`shunt_data/${dir}/${file}`,url:`blob:${i}`}));
+  const {cases,warnings}=groupEntries(entries);
+  assert.equal(cases.length,1);assert.equal(cases[0].complete,true);
+  assert.equal(cases[0].level,1);assert.equal(warnings.length,0);
+  assert.equal(cases[0].views.ap.patch,'blob:1');assert.equal(cases[0].views.lateral.patch,'blob:3');
+  entries[3].path=entries[3].path.replace('1.0.png','1.5.png');
+  assert.equal(groupEntries(entries).cases[0].level,null);
+});

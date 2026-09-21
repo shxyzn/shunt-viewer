@@ -6,7 +6,10 @@ export function levelFromName(name) {
   return m ? Number(m[1]) : null;
 }
 export function caseKey(name) {
-  const stem = name.replace(/\.[^.]+$/, '').replace(/(?<![\d.])(0\.5|1\.0|1\.5|2\.0|2\.5)$/, '');
+  let stem = name.replace(/\.[^.]+$/, '').replace(/(?<![\d.])(0\.5|1\.0|1\.5|2\.0|2\.5)$/, '');
+  // Known Strata export: shared study identifiers + 0000_A (AP) / 0001_L (LAT).
+  // Preserve the date and all shared identifiers; never pair by list order.
+  stem = stem.replace(/(^|\/)(strata_\d+_\d{8}_\d+)(?:0000_A|0001_L)_?$/i, '$1$2');
   return stem.replace(/(^|[_\s-])(anterior|lateral|ap|lat|images_patch|patch|crop)(?=$|[_\s-])/gi, '_').replace(/^[_\s-]+|[_\s-]+$/g, '').replace(/[_\s-]+/g, '_').toLowerCase();
 }
 export function locatePath(path) {

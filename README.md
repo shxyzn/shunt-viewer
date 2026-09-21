@@ -27,6 +27,8 @@ shunt_data/
 
 PNG/JPG/WebP/BMP 지원. DICOM/TIFF는 지원하지 않습니다.
 
+Strata 형식 `strata_<ID>_<YYYYMMDD>_<공통번호>0000_A_<단계>.png`와 `...0001_L_<단계>.png`도 같은 사례로 연결합니다. 촬영 날짜와 공통 식별자가 같아야 하며, 파일 순서로 짝을 맞추지 않습니다.
+
 ### PC 폴더에서 바로 열기
 
 사이트 상단 **폴더 열기** → PC의 `shunt_data` 폴더 선택. 선택한 파일은 브라우저 안에서만 읽고 서버에 올리지 않습니다. 폴더 구조가 맞으면 AP/LAT와 패치를 자동 연결합니다.
@@ -36,6 +38,8 @@ PNG/JPG/WebP/BMP 지원. DICOM/TIFF는 지원하지 않습니다.
 이 프로젝트 전용 저장소에 `shunt_data`를 업로드하면 GitHub Actions가 사례 목록을 생성하고 GitHub Pages를 갱신합니다. 공개 사이트에 올릴 수 있는 비식별 예시 영상만 사용하세요. GitHub Pages는 공개 URL입니다.
 
 처음 한 번 저장소 **Settings → Pages → Source → GitHub Actions**로 설정합니다. 이후 `main`에 올리면 자동 배포됩니다. 자기소개 홈페이지 저장소와는 독립적으로 사용합니다.
+
+Windows에서는 새로 복제한 저장소의 `scripts/upload_demo.ps1`을 실행하면 바탕화면 `shunt_data`에서 완전한 사례를 단계별 최대 2개씩 선택합니다. 총 250 MiB 이내이며 네 영상의 단계 값이 일치해야 합니다. 웹에 복사되는 파일명은 `case001_1.0.png` 형식으로 바뀌고 원본은 그대로 유지됩니다. 파일명 변경은 영상 자체에 포함된 정보를 제거하는 작업은 아닙니다. `-DryRun`은 선택 결과만 확인합니다.
 
 ## 밸브 위치
 

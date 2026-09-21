@@ -8,10 +8,12 @@ from pathlib import Path
 SUPPORTED = {'.png', '.jpg', '.jpeg', '.webp', '.bmp'}
 LEVEL = re.compile(r'(?<![\d.])(0\.5|1\.0|1\.5|2\.0|2\.5)$')
 ROLE = re.compile(r'(^|[_\s-])(anterior|lateral|ap|lat|images_patch|patch|crop)(?=$|[_\s-])', re.I)
+STRATA_VIEW = re.compile(r'(^|/)(strata_\d+_\d{8}_\d+)(?:0000_A|0001_L)_?$', re.I)
 
 def case_key(relative):
     stem = str(relative.with_suffix('')).replace('\\', '/')
     stem = LEVEL.sub('', stem)
+    stem = STRATA_VIEW.sub(r'\g<1>\g<2>', stem)
     return re.sub(r'[_\s-]+', '_', ROLE.sub('_', stem).strip('_ -\t')).lower()
 
 def locate_patch(original_path, patch_path):

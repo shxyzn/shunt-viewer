@@ -20,6 +20,7 @@ $parts = @('anterior\images', 'anterior\images_patch', 'lateral\images', 'latera
 $groups = @{}
 $levelPattern = '(?<![\d.])(0\.5|1\.0|1\.5|2\.0|2\.5)$'
 $rolePattern = '(^|[_\s-])(anterior|lateral|ap|lat|images_patch|patch|crop)(?=$|[_\s-])'
+$strataViewPattern = '(^|/)(strata_\d+_\d{8}_\d+)(?:0000_A|0001_L)_?$'
 
 foreach ($part in $parts) {
     $folder = Join-Path $source $part
@@ -30,7 +31,8 @@ foreach ($part in $parts) {
         if ($file.Extension -notmatch '^\.(png|jpe?g|webp|bmp)$') { continue }
         $relative = $file.FullName.Substring($folder.Length + 1)
         $stem = ($relative -replace '\\', '/') -replace '\.[^.]+$', ''
-        $key = (($stem -replace $levelPattern, '') -replace $rolePattern, '_')
+        $stem = ($stem -replace $levelPattern, '') -replace $strataViewPattern, '$1$2'
+        $key = $stem -replace $rolePattern, '_'
         $key = (($key -replace '^[_\s-]+|[_\s-]+$', '') -replace '[_\s-]+', '_').ToLowerInvariant()
         if (!$key) { continue }
         if (!$groups.ContainsKey($key)) {
@@ -83,9 +85,15 @@ if ($changes.Count -ne 0) { throw 'Use a fresh clone with no local changes.' }
 $ahead = Invoke-ShuntGit -C $repo rev-list --count origin/main..HEAD
 if ([int]$ahead -ne 0) { throw 'Use a fresh clone without the failed large commit.' }
 
+$caseNumber = 0
 foreach ($case in $selected) {
-    foreach ($entry in $case.Files.Values) {
-        $destination = Join-Path (Join-Path $repo 'shunt_data') $entry.Relative
+    $caseNumber++
+    $level = @($case.Levels.Keys)[0]
+    foreach ($part in $parts) {
+        $entry = $case.Files[$part]
+        # Keep original files untouched; omit source identifiers from public filenames.
+        $demoName = 'case{0:D3}_{1}{2}' -f $caseNumber, $level, ([IO.Path]::GetExtension($entry.Source).ToLowerInvariant())
+        $destination = Join-Path (Join-Path (Join-Path $repo 'shunt_data') $part) $demoName
         New-Item -ItemType Directory -Force -Path (Split-Path $destination -Parent) | Out-Null
         Copy-Item -LiteralPath $entry.Source -Destination $destination -Force
     }
