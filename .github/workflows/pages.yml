@@ -18,21 +18,25 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Install patch-matching dependency
-        run: python -m pip install 'opencv-python-headless>=4.8,<5'
+      - name: Install image preparation dependencies
+        run: python -m pip install 'opencv-python-headless>=4.8,<5' 'Pillow>=10,<13'
       - name: Check JavaScript and data pairing
         run: |
           node --check viewer.js
           node --test tests/data.test.mjs
       - name: Index shunt_data and prepare demo locations
         run: python scripts/build_manifest.py
+      - name: Prepare fast-loading images and case thumbnails
+        run: python scripts/prepare_web_images.py
       - uses: actions/configure-pages@v5
       - name: Prepare static site
         run: |
           mkdir -p _site
           cp index.html viewer.css viewer.js data.js _site/
           cp -r assets data _site/
-          if [ -d shunt_data ]; then cp -r shunt_data _site/; fi
+          mkdir -p _site/shunt_data/anterior _site/shunt_data/lateral
+          if [ -d shunt_data/anterior/images_patch ]; then cp -r shunt_data/anterior/images_patch _site/shunt_data/anterior/; fi
+          if [ -d shunt_data/lateral/images_patch ]; then cp -r shunt_data/lateral/images_patch _site/shunt_data/lateral/; fi
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
